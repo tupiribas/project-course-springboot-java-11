@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -13,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.educandoweb.course.entities.enums.OrderStatus;
@@ -35,11 +37,13 @@ public class Order implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "client_id")
 	private User client;
-	
+
 	@OneToMany(mappedBy = "id.order")
-	private Set<OrderItem> items = new HashSet<>(); 
-	
-	
+	private Set<OrderItem> items = new HashSet<>();
+
+	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+	private Payment payment;
+
 	public Order() {
 	}
 
@@ -65,7 +69,7 @@ public class Order implements Serializable {
 	public void setMoment(Instant moment) {
 		this.moment = moment;
 	}
-	
+
 	public OrderStatus getOrderStatus() {
 		return OrderStatus.valueOf(orderStatus);
 	}
@@ -84,6 +88,25 @@ public class Order implements Serializable {
 		this.client = client;
 	}
 
+	public Payment getPayment() {
+		return payment;
+	}
+
+	public void setPayment(Payment payment) {
+		this.payment = payment;
+	}
+
+	
+	public Double getTotal() {
+		double sum = 0.0;
+		
+		for (OrderItem items : items) {
+			sum += items.getSubTotal();
+		}
+		return sum;
+	}
+	
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
@@ -104,5 +127,4 @@ public class Order implements Serializable {
 		Order other = (Order) obj;
 		return Objects.equals(id, other.id);
 	}
-
 }
